@@ -21,7 +21,6 @@ class TextToImage(BasePlugin):
     # 插件加载时触发
     def __init__(self, host: APIHost):
         super().__init__(host)
-        pass
 
     # 异步初始化
     async def initialize(self):
