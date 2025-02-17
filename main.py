@@ -11,7 +11,7 @@ from plugins.BailianTextToImagePlugin.config import Config
 from pkg.plugin.types import platform_types  # 导入 platform_types
 
 # 注册插件
-@register(name="BailianTextToImagePlugin", description="调用阿里云百炼平台文生图API生成图片。", version="1.0", author="Thetail")
+@register(name="LangBot_BailianTextToImagePlugin", description="调用阿里云百炼平台文生图API生成图片。", version="1.0", author="Thetail")
 class TextToImage(BasePlugin):
 
     # 插件加载时触发
