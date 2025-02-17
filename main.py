@@ -15,7 +15,7 @@ model = Config.model
 os.environ[DASHSCOPE_API_KEY] = Config.DASHSCOPE_API_KEY
 
 # 注册插件
-@register(name="BailianTextToImagePlugin", description="调用阿里云百炼平台文生图API生成图片。", version="1.0", author="Thetail")
+@register(name="LangBot_BailianTextToImagePlugin", description="调用阿里云百炼平台文生图API生成图片。", version="1.0", author="Thetail")
 class TextToImage(BasePlugin):
 
     # 插件加载时触发
