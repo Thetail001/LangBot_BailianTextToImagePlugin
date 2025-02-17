@@ -7,7 +7,7 @@ import os
 from dashscope import ImageSynthesis
 from pkg.plugin.context import register, handler, llm_func, BasePlugin, APIHost, EventContext
 from pkg.plugin.events import *  # 导入事件类
-from plugins.BailianTextToImagePlugin.config import Config
+from plugins.LangBot_BailianTextToImagePlugin.config import Config
 from pkg.plugin.types import platform_types  # 导入 platform_types
 
 
