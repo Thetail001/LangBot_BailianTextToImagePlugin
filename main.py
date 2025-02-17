@@ -7,8 +7,8 @@ import os
 from dashscope import ImageSynthesis
 from pkg.plugin.context import register, handler, llm_func, BasePlugin, APIHost, EventContext
 from pkg.plugin.events import *  # 导入事件类
-from plugins.BailianTextToImagePlugin.config import Config
-from pkg.plugin.types import platform_types  # 导入 platform_types
+from plugins.LangBot_BailianTextToImagePlugin.config import Config
+import pkg.platform.types as platform_types  # 导入 platform_types
 
 # 注册插件
 @register(name="LangBot_BailianTextToImagePlugin", description="调用阿里云百炼平台文生图API生成图片。", version="1.0", author="Thetail")
