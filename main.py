@@ -73,8 +73,7 @@ class TextToImage(BasePlugin):
             final_rsp = ImageSynthesis.wait(rsp)
 
             if final_rsp.status_code == HTTPStatus.OK:
-                result = final_rsp.output.results[0]
-                url = result.url
+                url = final_rsp.output.results.url
 
                 message_parts = [platform_types.Image(url=url)]
                 ctx.add_return('reply', message_parts)
