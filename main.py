@@ -18,7 +18,6 @@ class TextToImage(BasePlugin):
     # 插件加载时触发
     def __init__(self, host: APIHost):
         super().__init__(host)
-        model = Config.model
         os.environ["DASHSCOPE_API_KEY"] = Config.DASHSCOPE_API_KEY
 
     # 异步初始化
@@ -44,6 +43,7 @@ class TextToImage(BasePlugin):
     async def process_command(self, ctx: EventContext, input_prompt: str):
         try:
             # 第一步：发起异步请求，获取任务 ID
+            model = Config.model
             rsp = ImageSynthesis.async_call(model=model,
                                             prompt=input_prompt,
                                             size='1024*1024')
