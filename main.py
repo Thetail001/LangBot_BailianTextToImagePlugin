@@ -36,8 +36,8 @@ class TextToImage(BasePlugin):
         message_chain = ctx.event.query.message_chain
         for message in message_chain:
             if isinstance(message, platform_types.Plain):
-                if re.search(r"[!！]ig", message.text):  # 检测是否包含 "!ig" 或 "！ig"
-                    prompt = re.split(r"[!！]ig", message.text, 1)[-1].strip()  # 按 "!ig" 或 "！ig" 分割，并获取后面的部分
+                if re.search(r"[\/／]ig", message.text):  # 检测是否包含 "/ig" 或 "／ig"
+                    prompt = re.split(r"[\/／]ig", message.text, 1)[-1].strip()  # 按 "/ig" 或 "／ig" 分割，并获取后面的部分
                     await self.process_command(ctx, prompt)
                     break
 
