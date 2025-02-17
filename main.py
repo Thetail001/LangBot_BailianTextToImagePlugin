@@ -7,7 +7,7 @@ import os
 from dashscope import ImageSynthesis
 from pkg.plugin.context import register, handler, llm_func, BasePlugin, APIHost, EventContext
 from pkg.plugin.events import *  # 导入事件类
-from plugins.LangBot_BailianTextToImagePlugin.config import Config
+from plugins.BailianTextToImagePlugin.config import Config
 from pkg.plugin.types import platform_types  # 导入 platform_types
 
 
@@ -15,7 +15,7 @@ model = Config.model
 os.environ[DASHSCOPE_API_KEY] = Config.DASHSCOPE_API_KEY
 
 # 注册插件
-@register(name="LangBot_BailianTextToImagePlugin", description="调用阿里云百炼平台文生图API生成图片。", version="1.0", author="Thetail")
+@register(name="BailianTextToImagePlugin", description="调用阿里云百炼平台文生图API生成图片。", version="1.0", author="Thetail")
 class TextToImage(BasePlugin):
 
     # 插件加载时触发
@@ -43,28 +43,49 @@ class TextToImage(BasePlugin):
                     break
 
     async def process_command(self, ctx: EventContext, input_prompt: str):
-         try:
-            rsp = await ImageSynthesis.async_call(model=model,  # 修正异步调用方式
-                                                  prompt=input_prompt,
-                                                  size='1024*1024')
-            if rsp.status_code == HTTPStatus.OK:
-                output = rsp.output
-                if output.task_status == 'SUCCESSED':
-                    result = output.results[0]
-                    url = result.url
-                    message_parts = [
-                        platform_types.Image(url=url) 
-                    ]
-                    ctx.add_return('reply', message_parts)
-                    ctx.prevent_default()
-                    ctx.prevent_postorder()
-                else:
-                    self.ap.logger.error(f"Failed, task_status: {output.task_status}")
+        try:
+            # 第一步：发起异步请求，获取任务 ID
+            rsp = ImageSynthesis.async_call(model=model,
+                                            prompt=input_prompt,
+                                            size='1024*1024')
+
+            if rsp.status_code != HTTPStatus.OK:
+                self.ap.logger.error(f"Failed to start task: {rsp.code}, message: {rsp.message}")
+                return
+
+            # 第二步：轮询等待任务完成
+            while True:
+                await asyncio.sleep(2)  # 等待一段时间后再查询状态，避免频繁请求服务器
+
+                status_rsp = ImageSynthesis.fetch(rsp)
+                if status_rsp.status_code != HTTPStatus.OK:
+                    self.ap.logger.error(f"Failed to fetch task status: {status_rsp.code}, message: {status_rsp.message}")
+                    return
+                
+                if status_rsp.output.task_status == 'SUCCESS':
+                    break   # 图片生成成功，跳出循环
+                
+                elif status_rsp.output.task_status in ['FAILED', 'ERROR']:
+                    self.ap.logger.error(f"Task failed with status: {status_rsp.output.task_status}")
+                    return
+
+            # 第三步：获取最终结果
+            final_rsp = ImageSynthesis.wait(rsp)
+
+            if final_rsp.status_code == HTTPStatus.OK:
+                result = final_rsp.output.results[0]
+                url = result.url
+
+                message_parts = [platform_types.Image(url=url)]
+                ctx.add_return('reply', message_parts)
+                ctx.prevent_default()
+                ctx.prevent_postorder()
+            
             else:
-                self.ap.logger.error('Failed, status_code: %s, code: %s, message: %s' %
-                        (rsp.status_code, rsp.code, rsp.message))
-         except Exception as e:
-            self.host.logger.error(f"生成图片异常: {e}")
+                self.ap.logger.error(f'Failed to retrieve image: {final_rsp.code}, message: {final_rsp.message}')
+
+        except Exception as e:
+            self.ap.logger.error(f"生成图片异常: {e}")
 
     # 插件卸载时触发
     def __del__(self):
