@@ -10,10 +10,6 @@ from pkg.plugin.events import *  # 导入事件类
 from plugins.BailianTextToImagePlugin.config import Config
 from pkg.plugin.types import platform_types  # 导入 platform_types
 
-
-model = Config.model
-os.environ[DASHSCOPE_API_KEY] = Config.DASHSCOPE_API_KEY
-
 # 注册插件
 @register(name="BailianTextToImagePlugin", description="调用阿里云百炼平台文生图API生成图片。", version="1.0", author="Thetail")
 class TextToImage(BasePlugin):
@@ -21,6 +17,8 @@ class TextToImage(BasePlugin):
     # 插件加载时触发
     def __init__(self, host: APIHost):
         super().__init__(host)
+        model = Config.model
+        os.environ["DASHSCOPE_API_KEY"] = Config.DASHSCOPE_API_KEY
 
     # 异步初始化
     async def initialize(self):
