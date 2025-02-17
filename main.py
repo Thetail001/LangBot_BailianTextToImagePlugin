@@ -62,7 +62,7 @@ class TextToImage(BasePlugin):
                     self.ap.logger.error(f"Failed to fetch task status: {status_rsp.code}, message: {status_rsp.message}")
                     return
                 
-                if status_rsp.output.task_status == 'SUCCESS':
+                if status_rsp.output.task_status == 'SUCCESSED':
                     break   # 图片生成成功，跳出循环
                 
                 elif status_rsp.output.task_status in ['FAILED', 'ERROR']:
