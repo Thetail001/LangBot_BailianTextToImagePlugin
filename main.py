@@ -5,6 +5,7 @@ import requests
 import asyncio
 import os
 import re
+import dashscope
 from dashscope import ImageSynthesis
 from pkg.plugin.context import register, handler, llm_func, BasePlugin, APIHost, EventContext
 from pkg.plugin.events import *  # 导入事件类
