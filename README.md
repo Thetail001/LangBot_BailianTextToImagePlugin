@@ -33,12 +33,12 @@
 配置完成 [LangBot](https://github.com/RockChinQ/LangBot) 主程序后使用管理员账号向机器人发送命令即可安装：
 
 ```
-!plugin get [<你的插件发布仓库地址>](https://github.com/Thetail001/LangBot_BailianTextToImagePlugin)
+!plugin get https://github.com/Thetail001/LangBot_BailianTextToImagePlugin
 ```
 或查看详细的[插件安装说明](https://docs.langbot.app/plugin/plugin-intro.html#%E6%8F%92%E4%BB%B6%E7%94%A8%E6%B3%95)
 
 ## 使用
 
-安装之后去插件目录下”config.py“文件配置百炼平台的key，之后重启，然后发送给机器人”/ig 想要画的内容（支持中英文）“生成图片。
+安装之后去插件目录下”config.py“文件配置百炼平台的key，之后重载插件平台，然后发送给机器人”/ig 想要画的内容（支持中英文）“生成图片。
 使用效果：
 ![IMG_20250218_081000](https://github.com/user-attachments/assets/38469d3b-e341-4870-aaac-deedea97e6d4)
