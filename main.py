@@ -3,7 +3,6 @@ from urllib.parse import urlparse, unquote
 from pathlib import PurePosixPath
 import requests
 import asyncio
-import os
 import re
 import dashscope
 from dashscope import ImageSynthesis
@@ -33,6 +32,7 @@ class TextToImage(BasePlugin):
     async def process_message(self, ctx: EventContext):
         """处理收到的消息"""
         message_chain = ctx.event.query.message_chain
+        self.ap.logger.info(f"message_chain: {message_chain}")
         for message in message_chain:
             if isinstance(message, platform_types.Plain):
                 if re.search(r"[\/／]ig", message.text):  # 检测是否包含 "/ig" 或 "／ig"
@@ -44,10 +44,11 @@ class TextToImage(BasePlugin):
         try:
             # 第一步：发起异步请求，获取任务 ID
             model = Config.model
+            size = Config.size
             dashscope.api_key = Config.DASHSCOPE_API_KEY
             rsp = ImageSynthesis.async_call(model=model,
                                             prompt=input_prompt,
-                                            size='1024*1024')
+                                            size=size)
 
             if rsp.status_code != HTTPStatus.OK:
                 self.ap.logger.error(f"Failed to start task: {rsp.code}, message: {rsp.message}")
@@ -62,7 +63,7 @@ class TextToImage(BasePlugin):
                     self.ap.logger.error(f"Failed to fetch task status: {status_rsp.code}, message: {status_rsp.message}")
                     return
                 
-                if status_rsp.output.task_status == 'SUCCESSED':
+                if status_rsp.output.task_status == 'SUCCEEDED':
                     break   # 图片生成成功，跳出循环
                 
                 elif status_rsp.output.task_status in ['FAILED', 'ERROR']:
@@ -73,7 +74,7 @@ class TextToImage(BasePlugin):
             final_rsp = ImageSynthesis.wait(rsp)
 
             if final_rsp.status_code == HTTPStatus.OK:
-                url = final_rsp.output.results.url
+                url = final_rsp.output.results[0]["url"]
 
                 message_parts = [platform_types.Image(url=url)]
                 ctx.add_return('reply', message_parts)
