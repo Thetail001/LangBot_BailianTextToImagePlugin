@@ -37,7 +37,10 @@ class TextToImage(BasePlugin):
             if isinstance(message, platform_types.Plain):
                 if re.search(r"[\/／]ig", message.text):  # 检测是否包含 "/ig" 或 "／ig"
                     prompt = re.split(r"[\/／]ig", message.text, 1)[-1].strip()  # 按 "/ig" 或 "／ig" 分割，并获取后面的部分
-                    await self.process_command(ctx, prompt)
+                    message_parts = await self.process_command(ctx, prompt)
+                    ctx.add_return('reply', message_parts)
+                    ctx.prevent_default()
+                    ctx.prevent_postorder()
                     break
 
     async def process_command(self, ctx: EventContext, input_prompt: str):
@@ -52,7 +55,7 @@ class TextToImage(BasePlugin):
 
             if rsp.status_code != HTTPStatus.OK:
                 self.ap.logger.error(f"Failed to start task: {rsp.code}, message: {rsp.message}")
-                return
+                return f"Failed to start task: {rsp.code}, message: {rsp.message}"
 
             # 第二步：轮询等待任务完成
             while True:
@@ -61,14 +64,14 @@ class TextToImage(BasePlugin):
                 status_rsp = ImageSynthesis.fetch(rsp)
                 if status_rsp.status_code != HTTPStatus.OK:
                     self.ap.logger.error(f"Failed to fetch task status: {status_rsp.code}, message: {status_rsp.message}")
-                    return
+                    return f"Failed to fetch task status: {status_rsp.code}, message: {status_rsp.message}"
                 
                 if status_rsp.output.task_status == 'SUCCEEDED':
                     break   # 图片生成成功，跳出循环
                 
-                elif status_rsp.output.task_status in ['FAILED', 'ERROR']:
+                elif status_rsp.output.task_status in ['FAILED', 'CANCELED']:
                     self.ap.logger.error(f"Task failed with status: {status_rsp.output.task_status}")
-                    return
+                    return f"Task failed with status: {status_rsp.output.task_status}"
 
             # 第三步：获取最终结果
             final_rsp = ImageSynthesis.wait(rsp)
@@ -77,12 +80,11 @@ class TextToImage(BasePlugin):
                 url = final_rsp.output.results[0]["url"]
 
                 message_parts = [platform_types.Image(url=url)]
-                ctx.add_return('reply', message_parts)
-                ctx.prevent_default()
-                ctx.prevent_postorder()
+                return message_parts
             
             else:
                 self.ap.logger.error(f'Failed to retrieve image: {final_rsp.code}, message: {final_rsp.message}')
+                return f'Failed to retrieve image: {final_rsp.code}, message: {final_rsp.message}'
 
         except Exception as e:
             self.ap.logger.error(f"生成图片异常: {e}")
